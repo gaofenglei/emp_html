@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="/commons/jquery-3.2.1.js"></script>
+<script type="text/javascript" src="/commons/bootstrap/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"  src="/commons/datatable/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/commons/datatable/DataTables-1.10.18/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="/commons/dateFormat.js"></script>
+<script type="text/javascript" src="/commons/bootbox/bootbox.min.js"></script>
+<script type="text/javascript" src="/commons/fileinput/js/fileinput.min.js"></script>
+<script type="text/javascript" src="/commons/fileinput/js/locales/zh.js"></script>
+<script type="text/javascript" src="/commons/ztree/js/jquery.ztree.all.min.js"></script>
+<script type="text/javascript" src="/commons/bootstarpValidator/js/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="/commons/bootstarpValidator/js/language/zh_CN.js"></script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/commons/ace/css/font-awesome.css">
+<!-- Ionicons -->
+<link rel="stylesheet" href="/commons/ace/css/ionicons.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/commons/ace/css/AdminLTE.css">
+<link rel="stylesheet" href="/commons/ace/css/skins/skin-blue.min.css">
+<link rel="stylesheet" href="/commons/ace/css/myCommon.css">
+
+<link rel="stylesheet" type="text/css" href="/commons/bootstrap/bootstrap/css/bootstrap.min.css"/>
+<link rel="stylesheet" type="text/css" href="/commons/datatable/DataTables-1.10.18/css/dataTables.bootstrap.min.css"/>
+<link rel="stylesheet" type="text/css" href="/commons/fileinput/css/fileinput.min.css"/>
+<link rel="stylesheet" type="text/css" href="/commons/ztree/css/bootstrapStyle/bootstrapStyle.css"/>
+<link rel="stylesheet" type="text/css" href="/commons/bootstarpValidator/css/bootstrapValidator.min.css"/>
+<head>
+    <meta charset="UTF-8">
+    <title>员工管理</title>
+</head>
+        <!--增加-->
+            <script type="text/html" id="empScript">
+                <form class="form-horizontal" id="empForm">
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">员工姓名:</label>
+                        <div class="col-sm-4">
+                            <input name="empName" type="员工姓名:" class="form-control" id="inputEmail3" placeholder="员工姓名:">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">薪资:</label>
+                        <div class="col-sm-4">
+                            <input name="salary" type="薪资:" class="form-control"  placeholder="薪资:">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">入职时间:</label>
+                        <div class="col-sm-4">
+                            <input name="entryTime" type="date" class="form-control"  placeholder="入职时间:">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">岗位:</label>
+                        <div class="col-sm-4" id="jobDiv">
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">部门:</label>
+                        <div class="col-sm-4" id="deptDiv">
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="col-sm-2 control-label">领导:</label>
+                        <div class="col-sm-4" id="leaderDiv">
+
+                        </div>
+                    </div>
+
+                </form>
+            </script>
+<body>
+        <input type="button"  class="btn btn-info" value="全选" onclick="quanxuan()"/>
+        <input type="button"  class="btn btn-info" value="全不选" onclick="quanbuxuan()"/>
+        <input type="button"  class="btn btn-info" value="反选" onclick="fanxuan()"/>
+        <button type="button" class="btn btn-info" onclick="addEmp()">新增</button>
+        <table id="table"  class="table text-nowrap" ></table>
+</body>
+</html>
+        <script>
+                    /*增加*/
+                    var jobHtml="";
+                    var deptHtml="";
+                    function addEmp() {
+                        $("#jobDiv").html(jobHtml="");
+                        $("#deptDiv").html(deptHtml="");
+                            $.ajax({
+                                url: "http://localhost:8081/emp/toAddEmp",
+                                dataType: "json",
+                                success: function(res){
+                                   var  jobList =  res.jobList;
+                                   var deptList =  res.deptList;
+                                   /*岗位*/
+                                    jobHtml+='<select  name="jobId"  class="form-control" type="岗位:" class="form-control"  placeholder="岗位:">';
+                                    jobHtml+='<option value="-1">~请选择~</option>';
+                                    for(var i=0;i<jobList.length;i++){
+                                            jobHtml+='<option value="'+jobList[i].id+'">'+jobList[i].jobName+'</option>';
+                                    }
+                                    jobHtml+='</select>';
+                                    $("#jobDiv").html(jobHtml);
+                                   /*部门*/
+                                    deptHtml+='<select  name="deptId" onchange="changeLeader()"  class="form-control" type="部门:" class="form-control"  placeholder="部门:">';
+                                    deptHtml+='<option value="-1">~请选择~</option>';
+                                    for(var i=0;i<deptList.length;i++){
+                                        deptHtml+='<option value="'+deptList[i].id+'">'+deptList[i].deptName+'</option>';
+                                    }
+                                    deptHtml+='</select>';
+                                    $("#deptDiv").html(deptHtml);
+                                }
+                            })
+
+                        bootbox.confirm({
+                            title:"增加",
+                            message:$("#empScript").html(),
+                            buttons: {
+                                confirm: {
+                                    label: '新增',
+                                    className: 'btn-success'
+                                },
+                                cancel: {
+                                    label: '取消',
+                                    className: 'btn-danger'
+                                }
+                            },
+                            callback:function(res){
+
+
+                                if(res){
+                                        var empName=$("[name='empName']").val();
+                                        var salary=$("[name='salary']").val();
+                                        var entryTime=$("[name='entryTime']").val();
+                                        var jobId=$("[name='jobId']").val();
+                                        var deptId=$("[name='deptId']").val();
+                                        if(empName=="" || empName==null){
+                                            alert("员工名称不能为空!");
+                                            return false;
+                                        }
+                                        if(salary=="" || salary==null){
+                                            alert("薪资不能为空!");
+                                            return false;
+                                        }
+                                        if(entryTime=="" || entryTime==null){
+                                            alert("入职时间不能为空!");
+                                            return false;
+                                        }
+                                        if(jobId==-1){
+                                            alert("岗位为必选项!");
+                                            return false;
+                                        }
+                                        if(deptId==-1){
+                                            alert("部门为必选项!");
+                                            return false;
+                                        }
+
+                                        $.ajax({
+                                            url: "http://localhost:8081/emp/isEmpName",
+                                            dataType: "json",
+                                            data:{
+                                                "empName":empName,
+                                                "deptId":deptId
+                                            },
+                                            success: function (res) {
+                                                if(res.code==true){
+                                                    $.post({
+                                                        url: "http://localhost:8081/emp/addEmp",
+                                                        dataType: "json",
+                                                        data:$("#empForm").serialize(),
+                                                        success: function(res){
+                                                            if(res.code==200){
+                                                                alert("新增成功");
+                                                                location.reload();
+                                                            }
+                                                        }
+                                                    })
+                                                }else{
+                                                    alert("当前部门下已存在该员工!");
+                                                    return false;
+                                                }
+                                            }
+                                        });
+
+                                }
+
+
+
+
+                            }
+                        })
+                    }
+
+
+
+                    /*点击部门改变领导下拉框*/
+                    var leaderHtml="";
+                    function changeLeader() {
+                        $("#leaderDiv").html(leaderHtml="");
+                        var deptId = $("[name='deptId']").val();
+                        if(deptId!=-1){
+                            $.ajax({
+                                url: "http://localhost:8081/emp/changeLeader",
+                                dataType: "json",
+                                data:{
+                                    "deptId":deptId
+                                },
+                                success: function (res) {
+                                   var leaderList=res.leaderList;
+                                    leaderHtml+='<select  name="leaderId"  class="form-control" type="领导名称:" class="form-control"  placeholder="领导名称:">';
+                                    leaderHtml+='<option value="-1">~请选择~</option>';
+                                    for(var i=0;i<leaderList.length;i++){
+                                        leaderHtml+='<option value="'+leaderList[i].id+'">'+leaderList[i].leaderName+'</option>';
+                                    }
+                                    leaderHtml+='</select>';
+                                    $("#leaderDiv").html(leaderHtml);
+                                }
+                            });
+                        }
+                    }
+
+
+
+
+
+
+
+                    /*分页*/
+                    var table= $("#table").DataTable({
+                        "lengthMenu": [ 2, 5, 10 ],
+                        "serverSide": true,//true是服务器模式，false是客户端模式
+                        "search": false,
+                        searching:false, //去掉搜索框
+                        "ajax":{
+                            url:"http://localhost:8081/emp/queryEmp",
+                            type:"post",
+                            "dataSrc":function (res) {
+                                return res.data;
+                            },
+                        },
+
+                        "columns":[
+                            {"data":"id","title":"<input type=\"checkbox\">",render:function(data, type, row, meta){
+                                    return '<input type="checkbox" name="check" value="'+data+'">';
+                                }},
+                            {"data":"empName","title":"员工名称"},
+                            {"data":"jobName","title":"岗位"},
+                            {"data":"salary","title":"薪资"},
+                            {"data":"entryTime","title":"入职时间",render:function(data, type, row, meta){
+                                    if(data!=null){
+                                        return new Date(data).Format("yyyy-MM-dd");
+                                    }
+                                    return  "";
+                                }},
+                            {"data":"leaderName","title":"领导名称"},
+                            {"data":"deptName","title":"部门名称"},
+                            {"data":"id","title":"操作",render:function(data, type, row, meta){
+                                    var button=
+                                        '<button type="button" class="btn btn-info" onclick="toUpdateStudent('+data+')">修改</button>' +
+                                        '<button type="button" class="btn btn-info" onclick="deleteStudent('+data+')">删除</button>' +
+                                        '';
+                                    return button;
+                                }},
+                        ],
+
+                        "language":{
+                            "url":"/commons/datatable/Chinese.json"
+                        }
+
+                    })
+
+                    function quanxuan(){
+                        $("[name=check]").each(function(){
+                            this.checked=true;
+                        });
+                    };
+
+
+                    function quanbuxuan(){
+                        $("[name=check]").each(function(){
+                            this.checked=false;
+                        });
+                    };
+
+                    function fanxuan(){
+                        $("[name=check]").each(function(){
+                            if(this.checked==true){
+                                this.checked=false;
+                            }else{
+                                this.checked=true;
+                            }
+                        });
+                    };
+        </script>
